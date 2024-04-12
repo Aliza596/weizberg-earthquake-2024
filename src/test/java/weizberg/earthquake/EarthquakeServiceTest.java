@@ -6,22 +6,20 @@ import weizberg.earthquake.json.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EarthquakeServiceFactoryTest {
+class EarthquakeServiceTest {
 
     @Test
     void oneHour() {
-        //given
+        // given
         EarthquakeService service = new EarthquakeServiceFactory().getService();
 
-        //when
+        // when
         FeatureCollection collection = service.oneHour().blockingGet();
 
-        //then
+        // then
         Properties properties = collection.features[0].properties;
         assertNotNull(properties.place);
         assertNotEquals(0, properties.mag);
         assertNotEquals(0, properties.time);
-
     }
-
 }
