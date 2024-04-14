@@ -9,6 +9,8 @@ import weizberg.earthquake.json.FeatureCollection;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +18,8 @@ import java.util.List;
 public class EarthquakeFrame extends JFrame {
     private JList<String> jlistOneHour = new JList<>();
     private JList<String> jlistOneMonth = new JList<>();
+    private JRadioButton oneHourButton = new JRadioButton("One Hour");
+    private JRadioButton oneMonthButton = new JRadioButton("30 days");
 
     public EarthquakeFrame() {
 
@@ -25,7 +29,15 @@ public class EarthquakeFrame extends JFrame {
 
         setLayout(new BorderLayout());
 
-        add(jlistOneHour, BorderLayout.CENTER);
+        JPanel buttons = new JPanel();
+        buttons.add(oneHourButton);
+        buttons.add(oneMonthButton);
+        add(buttons, BorderLayout.NORTH);
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(oneHourButton);
+        buttonGroup.add(oneMonthButton);
+
 
         EarthquakeService service = new EarthquakeServiceFactory().getService();
 
@@ -48,7 +60,40 @@ public class EarthquakeFrame extends JFrame {
                 .subscribe(
                         (response) -> handleResponse(response, jlistOneMonth),
                         Throwable::printStackTrace);
+
+        oneHourButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if(oneHourButton.isSelected()) {
+                    addOneHour();
+                }
+            }
+        });
+
+        oneMonthButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (oneMonthButton.isSelected()) {
+                    addOneMonth();
+                }
+            }
+        });
+
+
     }
+
+    private void addOneHour() {
+        getContentPane().add(jlistOneHour, BorderLayout.CENTER);
+        revalidate();
+        repaint();
+    }
+
+    private void addOneMonth() {
+        getContentPane().add(jlistOneMonth, BorderLayout.CENTER);
+        revalidate();
+        repaint();
+    }
+
 
     private void handleResponse(FeatureCollection response, JList<String> jlist) {
 
