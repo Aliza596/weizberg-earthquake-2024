@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class EarthquakeFrame extends JFrame{
+public class EarthquakeFrame extends JFrame {
     private JList<String> jlist = new JList<>();
 
     public EarthquakeFrame() {
