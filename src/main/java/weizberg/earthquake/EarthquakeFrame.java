@@ -64,7 +64,7 @@ public class EarthquakeFrame extends JFrame {
         oneHourButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if(oneHourButton.isSelected()) {
+                if (oneHourButton.isSelected()) {
                     addOneHour();
                 }
             }
