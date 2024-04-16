@@ -77,9 +77,11 @@ public class EarthquakeFrame extends JFrame {
                 if (!listSelectionEvent.getValueIsAdjusting()) {
                     int indexOfSelected = jlist.getSelectedIndex();
                     if (indexOfSelected >= 0) {
+                        int latitude = indexOfSelected * 2 + 1;
+                        int longitude = indexOfSelected * 2;
                         try {
-                            Desktop.getDesktop().browse(new URI("https://maps.google.com/?q=" + longAndLat[indexOfSelected * 2 + 1]
-                                    + "," + longAndLat[indexOfSelected * 2]));
+                            Desktop.getDesktop().browse(new URI("https://maps.google.com/?q=" + longAndLat[latitude]
+                                    + "," + longAndLat[longitude]));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
