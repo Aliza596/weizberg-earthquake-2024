@@ -68,9 +68,6 @@ public class EarthquakeFrame extends JFrame {
                         .subscribe(
                                 (response) -> handleResponse(response),
                                 Throwable::printStackTrace);
-/*
-                addOneMonth();
-*/
             }
         });
 
@@ -82,7 +79,7 @@ public class EarthquakeFrame extends JFrame {
                     if (indexOfSelected >= 0) {
                         try {
                             Desktop.getDesktop().browse(new URI("https://maps.google.com/?q=" + longAndLat[indexOfSelected * 2 + 1]
-                                    + "," +longAndLat[indexOfSelected * 2]));
+                                    + "," + longAndLat[indexOfSelected * 2]));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
