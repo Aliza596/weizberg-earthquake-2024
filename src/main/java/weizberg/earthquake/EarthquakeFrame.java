@@ -15,10 +15,8 @@ import java.awt.event.ActionListener;
 import java.net.URI;
 
 public class EarthquakeFrame extends JFrame {
-    private JList<String> jlistOneHour = new JList<>();
-    private JList<String> jlistOneMonth = new JList<>();
-    private String[] longAndLat;
-    private FeatureCollection[] featureCollections;
+    private JList<String> jlist = new JList<>();
+    private double[] longAndLat;
     private JRadioButton oneHourButton = new JRadioButton("One Hour");
     private JRadioButton oneMonthButton = new JRadioButton("30 days");
 
@@ -38,106 +36,76 @@ public class EarthquakeFrame extends JFrame {
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(oneHourButton);
         buttonGroup.add(oneMonthButton);
-
+        add(jlist);
 
         EarthquakeService service = new EarthquakeServiceFactory().getService();
-
-        Disposable disposableOneHour = service.oneHour()
-                // tells Rx to request the data on a background Thread
-                .subscribeOn(Schedulers.io())
-                // tells Rx to handle the response on Swing's main Thread
-                .observeOn(SwingSchedulers.edt())
-                //.observeOn(AndroidSchedulers.mainThread()) // Instead use this on Android only
-                .subscribe(
-                        (response) -> handleResponse(response, jlistOneHour),
-                        Throwable::printStackTrace);
-
-        Disposable disposableOneMonth = service.oneMonth()
-                // tells Rx to request the data on a background Thread
-                .subscribeOn(Schedulers.io())
-                // tells Rx to handle the response on Swing's main Thread
-                .observeOn(SwingSchedulers.edt())
-                //.observeOn(AndroidSchedulers.mainThread()) // Instead use this on Android only
-                .subscribe(
-                        (response) -> handleResponse(response, jlistOneMonth),
-                        Throwable::printStackTrace);
-
-        jlistOneHour.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent listSelectionEvent) {
-                if (!listSelectionEvent.getValueIsAdjusting()) {
-                    int indexOfSelected = jlistOneHour.getSelectedIndex();
-                    if (indexOfSelected >= 0) {
-                        try {
-                            Desktop.getDesktop().browse(new URI("https://maps.google.com/?q=" + longAndLat[indexOfSelected]));
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        });
-
-        jlistOneMonth.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent listSelectionEvent) {
-                if (!listSelectionEvent.getValueIsAdjusting()) {
-                    int indexOfSelected = jlistOneMonth.getSelectedIndex();
-                    if (indexOfSelected >= 0) {
-                        try {
-                            Desktop.getDesktop().browse(new URI("https://maps.google.com/?q=" + longAndLat[indexOfSelected]));
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        });
 
         oneHourButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                addOneHour();
+                Disposable disposableOneHour = service.oneHour()
+                        // tells Rx to request the data on a background Thread
+                        .subscribeOn(Schedulers.io())
+                        // tells Rx to handle the response on Swing's main Thread
+                        .observeOn(SwingSchedulers.edt())
+                        //.observeOn(AndroidSchedulers.mainThread()) // Instead use this on Android only
+                        .subscribe(
+                                (response) -> handleResponse(response),
+                                Throwable::printStackTrace);
+
             }
         });
 
         oneMonthButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                Disposable disposableOneMonth = service.oneMonth()
+                        // tells Rx to request the data on a background Thread
+                        .subscribeOn(Schedulers.io())
+                        // tells Rx to handle the response on Swing's main Thread
+                        .observeOn(SwingSchedulers.edt())
+                        //.observeOn(AndroidSchedulers.mainThread()) // Instead use this on Android only
+                        .subscribe(
+                                (response) -> handleResponse(response),
+                                Throwable::printStackTrace);
+/*
                 addOneMonth();
+*/
             }
         });
 
+        jlist.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent listSelectionEvent) {
+                if (!listSelectionEvent.getValueIsAdjusting()) {
+                    int indexOfSelected = jlist.getSelectedIndex();
+                    if (indexOfSelected >= 0) {
+                        try {
+                            Desktop.getDesktop().browse(new URI("https://maps.google.com/?q=" + longAndLat[indexOfSelected * 2 + 1]
+                                    + "," +longAndLat[indexOfSelected * 2]));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
 
     }
 
-    private void addOneHour() {
-        getContentPane().add(jlistOneHour, BorderLayout.CENTER);
-        revalidate();
-        repaint();
-    }
-
-    private void addOneMonth() {
-        getContentPane().add(jlistOneMonth, BorderLayout.CENTER);
-        revalidate();
-        repaint();
-    }
-
-
-    private void handleResponse(FeatureCollection response, JList<String> jlist) {
-
+    private void handleResponse(FeatureCollection response) {
+        int coordinatesIndexCounter = 0;
         String[] listData = new String[response.features.length];
-        longAndLat = new String[response.features.length];
+        longAndLat = new double[response.features.length * 2 + 1];
         for (int i = 0; i < response.features.length; i++) {
             Feature feature = response.features[i];
             listData[i] = feature.properties.mag + " " + feature.properties.place;
-            longAndLat[i] = feature.geometry.coordinates[0] + "," + feature.geometry.coordinates[1];
+            for (int j = 0; j < feature.geometry.coordinates.length - 1; j++) {
+                longAndLat[coordinatesIndexCounter] = feature.geometry.coordinates[j];
+                coordinatesIndexCounter++;
+            }
         }
-        for (int i = 0; i < response.features.length; i++) {
-            System.out.println(longAndLat[i]);
-        }
+
         jlist.setListData(listData);
     }
 
