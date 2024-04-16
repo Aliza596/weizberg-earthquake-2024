@@ -50,15 +50,7 @@ public class EarthquakeFrame extends JFrame {
                         .observeOn(SwingSchedulers.edt())
                         //.observeOn(AndroidSchedulers.mainThread()) // Instead use this on Android only
                         .subscribe(
-                                (response) -> {
-                                    handleResponse(response);
-                                    String[] listData = new String[featureCollection.features.length];
-                                    for (int i = 0; i < featureCollection.features.length; i++) {
-                                        Feature feature = featureCollection.features[i];
-                                        listData[i] = feature.properties.mag + " " + feature.properties.place;
-                                    }
-                                    jlist.setListData(listData);
-                                },
+                                (response) -> handleResponse(response),
                                 Throwable::printStackTrace);
             }
         });
@@ -73,15 +65,7 @@ public class EarthquakeFrame extends JFrame {
                         .observeOn(SwingSchedulers.edt())
                         //.observeOn(AndroidSchedulers.mainThread()) // Instead use this on Android only
                         .subscribe(
-                                (response) -> {
-                                    handleResponse(response);
-                                    String[] listData = new String[featureCollection.features.length];
-                                    for (int i = 0; i < featureCollection.features.length; i++) {
-                                        Feature feature = featureCollection.features[i];
-                                        listData[i] = feature.properties.mag + " " + feature.properties.place;
-                                    }
-                                    jlist.setListData(listData);
-                                },
+                                (response) -> handleResponse(response),
                                 Throwable::printStackTrace);
             }
         });
@@ -107,6 +91,12 @@ public class EarthquakeFrame extends JFrame {
 
     private void handleResponse(FeatureCollection response) {
         featureCollection = response;
+        String[] listData = new String[response.features.length];
+        for (int i = 0; i < response.features.length; i++) {
+            Feature feature = response.features[i];
+            listData[i] = feature.properties.mag + " " + feature.properties.place;
+        }
+        jlist.setListData(listData);
     }
 
     public static void main(String[] args) {
