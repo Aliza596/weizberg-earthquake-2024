@@ -16,7 +16,7 @@ import java.net.URI;
 
 public class EarthquakeFrame extends JFrame {
     private JList<String> jlist = new JList<>();
-    private double[] longAndLat;
+    private FeatureCollection featureCollection;
     private JRadioButton oneHourButton = new JRadioButton("One Hour");
     private JRadioButton oneMonthButton = new JRadioButton("30 days");
 
@@ -50,23 +50,38 @@ public class EarthquakeFrame extends JFrame {
                         .observeOn(SwingSchedulers.edt())
                         //.observeOn(AndroidSchedulers.mainThread()) // Instead use this on Android only
                         .subscribe(
-                                (response) -> handleResponse(response),
+                                (response) -> {
+                                    handleResponse(response);
+                                    String[] listData = new String[featureCollection.features.length];
+                                    for (int i = 0; i < featureCollection.features.length; i++) {
+                                        Feature feature = featureCollection.features[i];
+                                        listData[i] = feature.properties.mag + " " + feature.properties.place;
+                                    }
+                                    jlist.setListData(listData);
+                                },
                                 Throwable::printStackTrace);
-
             }
         });
 
         oneMonthButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                Disposable disposableOneMonth = service.oneMonth()
+               Disposable disposableOneMonth = service.oneMonth()
                         // tells Rx to request the data on a background Thread
                         .subscribeOn(Schedulers.io())
                         // tells Rx to handle the response on Swing's main Thread
                         .observeOn(SwingSchedulers.edt())
                         //.observeOn(AndroidSchedulers.mainThread()) // Instead use this on Android only
                         .subscribe(
-                                (response) -> handleResponse(response),
+                                (response) -> {
+                                    handleResponse(response);
+                                    String[] listData = new String[featureCollection.features.length];
+                                    for (int i = 0; i < featureCollection.features.length; i++) {
+                                        Feature feature = featureCollection.features[i];
+                                        listData[i] = feature.properties.mag + " " + feature.properties.place;
+                                    }
+                                    jlist.setListData(listData);
+                                },
                                 Throwable::printStackTrace);
             }
         });
@@ -76,36 +91,22 @@ public class EarthquakeFrame extends JFrame {
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 if (!listSelectionEvent.getValueIsAdjusting()) {
                     int indexOfSelected = jlist.getSelectedIndex();
-                    if (indexOfSelected >= 0) {
-                        int latitude = indexOfSelected * 2 + 1;
-                        int longitude = indexOfSelected * 2;
-                        try {
-                            Desktop.getDesktop().browse(new URI("https://maps.google.com/?q=" + longAndLat[latitude]
-                                    + "," + longAndLat[longitude]));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    Feature feature = featureCollection.features[indexOfSelected];
+                    double longitude = feature.geometry.coordinates[0];
+                    double latitude = feature.geometry.coordinates[1];
+                    try {
+                        Desktop.getDesktop().browse(new URI("https://maps.google.com/?q=" + latitude
+                                + "," + longitude));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             }
         });
-
     }
 
     private void handleResponse(FeatureCollection response) {
-        int coordinatesIndexCounter = 0;
-        String[] listData = new String[response.features.length];
-        longAndLat = new double[response.features.length * 2 + 1];
-        for (int i = 0; i < response.features.length; i++) {
-            Feature feature = response.features[i];
-            listData[i] = feature.properties.mag + " " + feature.properties.place;
-            for (int j = 0; j < feature.geometry.coordinates.length - 1; j++) {
-                longAndLat[coordinatesIndexCounter] = feature.geometry.coordinates[j];
-                coordinatesIndexCounter++;
-            }
-        }
-
-        jlist.setListData(listData);
+        featureCollection = response;
     }
 
     public static void main(String[] args) {
